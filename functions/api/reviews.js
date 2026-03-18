@@ -14,9 +14,9 @@ export async function onRequestGet(context) {
         time: r.relative_time_description,
       }));
 
-    return Response.json({ reviews });
+    return Response.json({ reviews, _debug: { status: data.status, error_message: data.error_message, result_keys: data.result ? Object.keys(data.result) : null, raw_count: data.result?.reviews?.length ?? 0 } });
   } catch (err) {
     console.error('Reviews error:', err);
-    return Response.json({ reviews: [] });
+    return Response.json({ reviews: [], _debug: { error: err.message } });
   }
 }
