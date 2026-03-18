@@ -59,6 +59,9 @@
             </button>
           </div>
           <span id="save-status" class="text-green-600 text-sm font-medium hidden">Saved!</span>
+          <button id="setup-btn" class="text-sm text-gray-500 hover:text-gray-900 transition border border-gray-300 rounded-lg px-4 py-2">
+            Run Setup
+          </button>
           <button id="logout-btn" class="text-sm text-gray-500 hover:text-gray-900 transition border border-gray-300 rounded-lg px-4 py-2">
             Logout
           </button>
@@ -382,6 +385,23 @@
     });
 
     document.getElementById('refresh-btn').addEventListener('click', loadSubmissions);
+
+    document.getElementById('setup-btn').addEventListener('click', async () => {
+      if (!confirm('Run database setup? Safe to run multiple times.')) return;
+      const btn = document.getElementById('setup-btn');
+      btn.disabled = true;
+      btn.textContent = 'Running…';
+      try {
+        const res = await fetch('/api/setup', { headers: { 'x-admin-password': password } });
+        const data = await res.json();
+        alert(data.message || data.error || 'Done.');
+      } catch {
+        alert('Setup failed.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Run Setup';
+      }
+    });
 
     // --- Tabs ---
     function switchTab(tab) {
