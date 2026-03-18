@@ -2,14 +2,14 @@ export async function onRequestGet(context) {
   const { env } = context;
 
   try {
-    // Step 1: find Place ID via text search
-    const searchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=Joshy+K+magician+New+York&key=${env.GOOGLE_PLACES_API_KEY}`;
+    // Step 1: find Place ID via phone number lookup
+    const searchUrl = `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=%2B15162799220&inputtype=phonenumber&fields=place_id,name&key=${env.GOOGLE_PLACES_API_KEY}`;
     const searchRes = await fetch(searchUrl);
     const searchData = await searchRes.json();
-    const placeId = searchData.results?.[0]?.place_id;
+    const placeId = searchData.candidates?.[0]?.place_id;
 
     if (!placeId) {
-      return Response.json({ reviews: [], _debug: { search_status: searchData.status, search_error: searchData.error_message, http_status: searchRes.status } });
+      return Response.json({ reviews: [], _debug: { search_status: searchData.status, search_error: searchData.error_message, candidates: searchData.candidates } });
     }
 
     // Step 2: fetch reviews using the resolved Place ID
