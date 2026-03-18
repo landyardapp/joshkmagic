@@ -64,6 +64,16 @@
         .marquee-track:hover {
             animation-play-state: paused;
         }
+        @keyframes sparkle {
+            0%   { transform: scale(0) rotate(0deg);   opacity: 0; }
+            30%  { transform: scale(1) rotate(45deg);  opacity: 1; }
+            100% { transform: scale(0) rotate(90deg);  opacity: 0; }
+        }
+        .sparkle-particle {
+            position: absolute;
+            pointer-events: none;
+            animation: sparkle 900ms ease-out forwards;
+        }
         @keyframes marquee {
             0% { transform: translateX(0); }
             100% { transform: translateX(-50%); }
@@ -94,7 +104,7 @@
     <header class="sticky top-0 z-50 w-full border-b border-gray-200">
         <nav class="container mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
-                <a href="#" class="text-2xl font-bold font-playfair text-black">Josh Kurzban&nbsp; <span class="text-amber-400">Magic</span></a>
+                <a href="#" class="text-2xl font-bold font-playfair text-black">Josh Kurzban&nbsp; <span class="text-amber-400 relative" id="magic-word">Magic</span></a>
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="#services" class="text-gray-600 hover:text-amber-400 transition">Services</a>
                     <a href="#about" class="text-gray-600 hover:text-amber-400 transition">About</a>
@@ -361,6 +371,40 @@
     </footer>
 
     <script>
+        // Sparkle effect on "Magic"
+        (function() {
+            const el = document.getElementById('magic-word');
+            const shapes = ['✦', '✧', '⋆', '★'];
+            const colors = ['#D4AF37', '#f5d76e', '#ffe599', '#c9a227'];
+
+            function spawnSparkle() {
+                const s = document.createElement('span');
+                s.className = 'sparkle-particle';
+                s.textContent = shapes[Math.floor(Math.random() * shapes.length)];
+                const size = 8 + Math.random() * 8;
+                const x = -10 + Math.random() * 110;
+                const y = -20 + Math.random() * 120;
+                s.style.cssText = `
+                    left:${x}%; top:${y}%;
+                    font-size:${size}px;
+                    color:${colors[Math.floor(Math.random() * colors.length)]};
+                    line-height:1;
+                `;
+                el.appendChild(s);
+                setTimeout(() => s.remove(), 950);
+            }
+
+            function burst() {
+                const count = 2 + Math.floor(Math.random() * 3);
+                for (let i = 0; i < count; i++) {
+                    setTimeout(spawnSparkle, i * 120);
+                }
+                setTimeout(burst, 2500 + Math.random() * 2000);
+            }
+
+            setTimeout(burst, 1000);
+        })();
+
         // Mobile menu toggle
         const menuBtn = document.getElementById('menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
