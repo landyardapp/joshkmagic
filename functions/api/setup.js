@@ -4,7 +4,11 @@ export async function onRequestGet(context) {
   const { request, env } = context;
 
   if (request.headers.get('x-admin-password') !== env.ADMIN_PASSWORD) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    return Response.json({
+      error: 'Unauthorized',
+      received_length: request.headers.get('x-admin-password')?.length ?? null,
+      expected_length: env.ADMIN_PASSWORD?.length ?? null,
+    }, { status: 401 });
   }
 
   try {
