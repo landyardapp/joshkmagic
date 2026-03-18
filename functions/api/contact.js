@@ -1,18 +1,18 @@
 import { neon } from '@neondatabase/serverless';
 
 async function sendEmail({ to, replyTo, subject, html, apiKey, fromEmail }) {
-  return fetch('https://api.sendgrid.com/v3/mail/send', {
+  return fetch('https://api.brevo.com/v3/smtp/email', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${apiKey}`,
+      'api-key': apiKey,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      personalizations: [{ to: [{ email: to }] }],
-      from: { email: fromEmail },
-      reply_to: { email: replyTo },
+      sender: { email: fromEmail },
+      to: [{ email: to }],
+      replyTo: { email: replyTo },
       subject,
-      content: [{ type: 'text/html', value: html }],
+      htmlContent: html,
     }),
   });
 }
@@ -53,8 +53,8 @@ export async function onRequestPost(context) {
       to,
       replyTo: email,
       subject: `New Booking Inquiry — ${name}`,
-      apiKey: env.SENDGRID_API_KEY,
-      fromEmail: env.SENDGRID_FROM_EMAIL,
+      apiKey: env.BREVO_API_KEY,
+      fromEmail: env.BREVO_FROM_EMAIL,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
           <h2 style="color: #D4AF37; margin-bottom: 24px;">New Booking Inquiry</h2>
