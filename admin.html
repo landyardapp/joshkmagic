@@ -74,44 +74,78 @@
       </div>
     </div>
 
+    <!-- Tabs -->
+    <div class="bg-white border-b border-gray-200 px-6">
+      <div class="max-w-7xl mx-auto flex gap-6">
+        <button id="tab-submissions" onclick="switchTab('submissions')" class="py-3 text-sm font-semibold border-b-2 border-amber-400 text-amber-500 transition">Submissions</button>
+        <button id="tab-reviews" onclick="switchTab('reviews')" class="py-3 text-sm font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-900 transition">Google Reviews</button>
+      </div>
+    </div>
+
     <!-- Main Content -->
     <main class="flex-1 px-6 py-8">
       <div class="max-w-7xl mx-auto">
 
-        <div class="flex items-center justify-between mb-6">
-          <h2 class="text-lg font-bold text-gray-900">Submissions</h2>
-          <button id="refresh-btn" class="text-sm text-gray-500 hover:text-gray-900 transition border border-gray-200 rounded-lg px-3 py-1.5">
-            Refresh
-          </button>
+        <!-- Submissions Tab -->
+        <div id="pane-submissions">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-lg font-bold text-gray-900">Submissions</h2>
+            <button id="refresh-btn" class="text-sm text-gray-500 hover:text-gray-900 transition border border-gray-200 rounded-lg px-3 py-1.5">
+              Refresh
+            </button>
+          </div>
+
+          <div id="loading" class="text-center py-20 text-gray-400">Loading submissions...</div>
+          <div id="load-error" class="hidden text-center py-20 text-red-500"></div>
+          <div id="empty-state" class="hidden text-center py-20 text-gray-400">No submissions yet.</div>
+
+          <div id="table-wrap" class="hidden overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
+            <table class="w-full text-sm text-left">
+              <thead class="bg-gray-50 text-gray-500 uppercase text-xs tracking-wide">
+                <tr>
+                  <th class="px-4 py-3 font-semibold">Date</th>
+                  <th class="px-4 py-3 font-semibold">Name</th>
+                  <th class="px-4 py-3 font-semibold">Email</th>
+                  <th class="px-4 py-3 font-semibold">Phone</th>
+                  <th class="px-4 py-3 font-semibold">Event Type</th>
+                  <th class="px-4 py-3 font-semibold">Event Date</th>
+                  <th class="px-4 py-3 font-semibold">Guests</th>
+                  <th class="px-4 py-3 font-semibold">Message</th>
+                  <th class="px-4 py-3 font-semibold"></th>
+                </tr>
+              </thead>
+              <tbody id="submissions-body" class="divide-y divide-gray-100 bg-white"></tbody>
+            </table>
+          </div>
         </div>
 
-        <!-- Loading -->
-        <div id="loading" class="text-center py-20 text-gray-400">Loading submissions...</div>
+        <!-- Reviews Tab -->
+        <div id="pane-reviews" class="hidden">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-lg font-bold text-gray-900">Google Reviews</h2>
+          </div>
 
-        <!-- Error -->
-        <div id="load-error" class="hidden text-center py-20 text-red-500"></div>
+          <!-- Add Review Form -->
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-8 max-w-2xl">
+            <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wide mb-4">Add Review</h3>
+            <form id="review-form" class="space-y-4">
+              <input id="review-author" type="text" placeholder="Reviewer name" required
+                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+              <textarea id="review-text" placeholder="Paste the review text here..." rows="4" required
+                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"></textarea>
+              <div class="flex items-center gap-3">
+                <button type="submit" class="bg-gold px-5 py-2.5 rounded-lg text-sm font-bold text-gray-900 hover:brightness-105 transition">
+                  Add Review
+                </button>
+                <span id="review-add-status" class="text-sm font-medium hidden"></span>
+              </div>
+            </form>
+          </div>
 
-        <!-- Empty state -->
-        <div id="empty-state" class="hidden text-center py-20 text-gray-400">No submissions yet.</div>
-
-        <!-- Table -->
-        <div id="table-wrap" class="hidden overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
-          <table class="w-full text-sm text-left">
-            <thead class="bg-gray-50 text-gray-500 uppercase text-xs tracking-wide">
-              <tr>
-                <th class="px-4 py-3 font-semibold">Date</th>
-                <th class="px-4 py-3 font-semibold">Name</th>
-                <th class="px-4 py-3 font-semibold">Email</th>
-                <th class="px-4 py-3 font-semibold">Phone</th>
-                <th class="px-4 py-3 font-semibold">Event Type</th>
-                <th class="px-4 py-3 font-semibold">Event Date</th>
-                <th class="px-4 py-3 font-semibold">Guests</th>
-                <th class="px-4 py-3 font-semibold">Message</th>
-                <th class="px-4 py-3 font-semibold"></th>
-              </tr>
-            </thead>
-            <tbody id="submissions-body" class="divide-y divide-gray-100 bg-white"></tbody>
-          </table>
+          <!-- Reviews List -->
+          <div id="reviews-loading" class="text-center py-10 text-gray-400">Loading reviews...</div>
+          <div id="reviews-empty" class="hidden text-center py-10 text-gray-400">No reviews yet. Add one above.</div>
+          <div id="reviews-list" class="hidden space-y-4 max-w-2xl"></div>
         </div>
 
       </div>
@@ -348,6 +382,117 @@
     });
 
     document.getElementById('refresh-btn').addEventListener('click', loadSubmissions);
+
+    // --- Tabs ---
+    function switchTab(tab) {
+      const tabs = ['submissions', 'reviews'];
+      tabs.forEach(t => {
+        document.getElementById(`pane-${t}`).classList.toggle('hidden', t !== tab);
+        const btn = document.getElementById(`tab-${t}`);
+        if (t === tab) {
+          btn.classList.add('border-amber-400', 'text-amber-500');
+          btn.classList.remove('border-transparent', 'text-gray-500');
+        } else {
+          btn.classList.remove('border-amber-400', 'text-amber-500');
+          btn.classList.add('border-transparent', 'text-gray-500');
+        }
+      });
+      if (tab === 'reviews') loadReviews();
+    }
+
+    // --- Reviews ---
+    let reviewsList = [];
+
+    async function loadReviews() {
+      document.getElementById('reviews-loading').classList.remove('hidden');
+      document.getElementById('reviews-list').classList.add('hidden');
+      document.getElementById('reviews-empty').classList.add('hidden');
+      try {
+        const res = await fetch('/api/reviews');
+        const data = await res.json();
+        renderReviews(data.reviews || []);
+      } catch {
+        document.getElementById('reviews-loading').textContent = 'Failed to load reviews.';
+      }
+    }
+
+    function renderReviews(reviews) {
+      reviewsList = reviews;
+      document.getElementById('reviews-loading').classList.add('hidden');
+      if (!reviews.length) {
+        document.getElementById('reviews-empty').classList.remove('hidden');
+        return;
+      }
+      const list = document.getElementById('reviews-list');
+      list.innerHTML = reviews.map((r, i) => `
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5" data-idx="${i}">
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex-1">
+              <p class="text-sm font-bold text-gray-900 mb-1">${esc(r.author)}</p>
+              <p class="text-sm text-gray-600 leading-relaxed">${esc(r.text)}</p>
+            </div>
+            <button onclick="deleteReview(${r.id ?? i}, this)"
+              class="text-red-400 hover:text-red-600 transition text-xs font-semibold border border-red-200 rounded px-2 py-1 hover:border-red-400 shrink-0">
+              Delete
+            </button>
+          </div>
+        </div>
+      `).join('');
+      list.classList.remove('hidden');
+    }
+
+    document.getElementById('review-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const author = document.getElementById('review-author').value.trim();
+      const text = document.getElementById('review-text').value.trim();
+      const status = document.getElementById('review-add-status');
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      btn.textContent = 'Adding…';
+      status.className = 'text-sm font-medium hidden';
+      try {
+        const res = await fetch('/api/reviews', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+          body: JSON.stringify({ author, text }),
+        });
+        if (res.ok) {
+          e.target.reset();
+          status.textContent = 'Review added!';
+          status.className = 'text-sm font-medium text-green-600';
+          setTimeout(() => status.classList.add('hidden'), 2500);
+          loadReviews();
+        } else {
+          const d = await res.json();
+          status.textContent = d.error || 'Failed to add review.';
+          status.className = 'text-sm font-medium text-red-600';
+        }
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Add Review';
+      }
+    });
+
+    async function deleteReview(id, btn) {
+      if (!confirm('Delete this review?')) return;
+      btn.disabled = true;
+      btn.textContent = '…';
+      const res = await fetch(`/api/reviews?id=${id}`, {
+        method: 'DELETE',
+        headers: { 'x-admin-password': password },
+      });
+      if (res.ok) {
+        btn.closest('[data-idx]').remove();
+        if (!document.getElementById('reviews-list').children.length) {
+          document.getElementById('reviews-list').classList.add('hidden');
+          document.getElementById('reviews-empty').classList.remove('hidden');
+        }
+      } else {
+        btn.disabled = false;
+        btn.textContent = 'Delete';
+        alert('Failed to delete review.');
+      }
+    }
 
     // --- Helpers ---
     function formatDate(iso) {

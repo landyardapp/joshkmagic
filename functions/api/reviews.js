@@ -1,45 +1,66 @@
+import { neon } from '@neondatabase/serverless';
+
 export async function onRequestGet(context) {
   const { env } = context;
-
   try {
-    // Step 1: find Place ID via new Places API v1 text search
-    const searchRes = await fetch('https://places.googleapis.com/v1/places:searchText', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Goog-Api-Key': env.GOOGLE_PLACES_API_KEY,
-        'X-Goog-FieldMask': 'places.id,places.displayName',
-      },
-      body: JSON.stringify({ textQuery: 'Joshy K NY Magician Mentalist' }),
-    });
-    const searchText = await searchRes.text();
-    const searchData = JSON.parse(searchText);
-    const placeId = searchData.places?.[0]?.id;
-
-    if (!placeId) {
-      return Response.json({ reviews: [], _debug: { http_status: searchRes.status, search_response: searchData } });
-    }
-
-    // Step 2: fetch reviews using new Places API v1
-    const detailRes = await fetch(`https://places.googleapis.com/v1/places/${placeId}`, {
-      headers: {
-        'X-Goog-Api-Key': env.GOOGLE_PLACES_API_KEY,
-        'X-Goog-FieldMask': 'displayName,reviews',
-      },
-    });
-    const detailData = await detailRes.json();
-
-    const reviews = (detailData.reviews || [])
-      .filter(r => r.rating === 5 && r.text?.text && r.text.text.trim().length > 80)
-      .map(r => ({
-        author: r.authorAttribution?.displayName || 'Anonymous',
-        text: r.text.text.trim(),
-        time: r.relativePublishTimeDescription,
-      }));
-
-    return Response.json({ reviews, _debug: { placeId, name: detailData.displayName?.text, raw_count: detailData.reviews?.length ?? 0 } });
+    const sql = neon(env.POSTGRES_URL);
+    const rows = await sql`SELECT * FROM google_reviews ORDER BY created_at DESC`;
+    return Response.json({ reviews: rows.map(r => ({
+      id: r.id,
+      author: r.author,
+      text: r.text,
+      time: new Date(r.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+    })) });
   } catch (err) {
     console.error('Reviews error:', err);
-    return Response.json({ reviews: [], _debug: { error: err.message } });
+    return Response.json({ reviews: [] });
+  }
+}
+
+export async function onRequestPost(context) {
+  const { request, env } = context;
+
+  if (request.headers.get('x-admin-password')?.trim() !== env.ADMIN_PASSWORD) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  let body;
+  try { body = await request.json(); } catch {
+    return Response.json({ error: 'Invalid body' }, { status: 400 });
+  }
+
+  const { author, text } = body;
+  if (!author || !text) {
+    return Response.json({ error: 'Author and text are required.' }, { status: 400 });
+  }
+
+  try {
+    const sql = neon(env.POSTGRES_URL);
+    const rows = await sql`
+      INSERT INTO google_reviews (author, text) VALUES (${author.trim()}, ${text.trim()})
+      RETURNING *
+    `;
+    return Response.json({ success: true, review: rows[0] });
+  } catch (err) {
+    return Response.json({ error: err.message }, { status: 500 });
+  }
+}
+
+export async function onRequestDelete(context) {
+  const { request, env } = context;
+
+  if (request.headers.get('x-admin-password')?.trim() !== env.ADMIN_PASSWORD) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const id = new URL(request.url).searchParams.get('id');
+  if (!id) return Response.json({ error: 'ID required' }, { status: 400 });
+
+  try {
+    const sql = neon(env.POSTGRES_URL);
+    await sql`DELETE FROM google_reviews WHERE id = ${id}`;
+    return Response.json({ success: true });
+  } catch (err) {
+    return Response.json({ error: err.message }, { status: 500 });
   }
 }

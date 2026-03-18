@@ -34,6 +34,15 @@ export async function onRequestGet(context) {
     `;
 
     await sql`
+      CREATE TABLE IF NOT EXISTS google_reviews (
+        id SERIAL PRIMARY KEY,
+        author TEXT NOT NULL,
+        text TEXT NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `;
+
+    await sql`
       INSERT INTO settings (key, value)
       VALUES ('notification_email', ${env.DEFAULT_NOTIFICATION_EMAIL || 'acpaulley@gmail.com'})
       ON CONFLICT (key) DO NOTHING
