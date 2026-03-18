@@ -2,19 +2,41 @@ export async function onRequestGet(context) {
   const { env } = context;
 
   try {
-    const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${env.GOOGLE_PLACE_ID}&fields=reviews&key=${env.GOOGLE_PLACES_API_KEY}&reviews_sort=newest`;
-    const res = await fetch(url);
-    const data = await res.json();
+    // Step 1: find the place using new Places API v1 text search
+    const searchRes = await fetch('https://places.googleapis.com/v1/places:searchText', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': env.GOOGLE_PLACES_API_KEY,
+        'X-Goog-FieldMask': 'places.id,places.displayName',
+      },
+      body: JSON.stringify({ textQuery: 'Joshy K NY Magician Mentalist New York' }),
+    });
+    const searchData = await searchRes.json();
+    const placeId = searchData.places?.[0]?.id;
 
-    const reviews = (data.result?.reviews || [])
-      .filter(r => r.rating === 5 && r.text && r.text.trim().length > 80)
+    if (!placeId) {
+      return Response.json({ reviews: [], _debug: { search: searchData } });
+    }
+
+    // Step 2: fetch reviews for that place
+    const detailRes = await fetch(`https://places.googleapis.com/v1/places/${placeId}`, {
+      headers: {
+        'X-Goog-Api-Key': env.GOOGLE_PLACES_API_KEY,
+        'X-Goog-FieldMask': 'reviews,displayName',
+      },
+    });
+    const detailData = await detailRes.json();
+
+    const reviews = (detailData.reviews || [])
+      .filter(r => r.rating === 5 && r.text?.text && r.text.text.trim().length > 80)
       .map(r => ({
-        author: r.author_name,
-        text: r.text.trim(),
-        time: r.relative_time_description,
+        author: r.authorAttribution?.displayName || 'Anonymous',
+        text: r.text.text.trim(),
+        time: r.relativePublishTimeDescription,
       }));
 
-    return Response.json({ reviews, _debug: { status: data.status, error_message: data.error_message, result_keys: data.result ? Object.keys(data.result) : null, raw_count: data.result?.reviews?.length ?? 0 } });
+    return Response.json({ reviews, _debug: { placeId, displayName: detailData.displayName, raw_count: detailData.reviews?.length ?? 0 } });
   } catch (err) {
     console.error('Reviews error:', err);
     return Response.json({ reviews: [], _debug: { error: err.message } });
