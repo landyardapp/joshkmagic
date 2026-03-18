@@ -49,7 +49,7 @@ export async function onRequestPost(context) {
     const settingsRes = await sql`SELECT value FROM settings WHERE key = 'notification_email' LIMIT 1`;
     const to = settingsRes[0]?.value || env.DEFAULT_NOTIFICATION_EMAIL;
 
-    await sendEmail({
+    const emailRes = await sendEmail({
       to,
       replyTo: email,
       subject: `New Booking Inquiry — ${name}`,
@@ -72,6 +72,12 @@ export async function onRequestPost(context) {
         </div>
       `,
     });
+
+    if (!emailRes.ok) {
+      const errBody = await emailRes.text();
+      console.error('Brevo error:', emailRes.status, errBody);
+      return Response.json({ error: `Email failed: ${errBody}` }, { status: 500 });
+    }
 
     return Response.json({ success: true });
   } catch (err) {
