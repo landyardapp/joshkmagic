@@ -6,7 +6,9 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { name, email, phone, eventType, attendees, eventDate, eventTime, referral, message } = req.body || {};
+  const { name, email, phone, eventType, attendees, eventDateTime, referral, message } = req.body || {};
+  const eventDate = eventDateTime ? eventDateTime.split('T')[0] : null;
+  const eventTime = eventDateTime ? new Date(eventDateTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : null;
 
   if (!name || !email || !message) {
     return res.status(400).json({ error: 'Name, email, and message are required.' });

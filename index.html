@@ -228,8 +228,7 @@
                         <input id="phone" type="text" placeholder="Cell Phone Number" class="bg-gray-100 border border-gray-300 rounded-lg p-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400 w-full">
                         <input id="eventType" type="text" placeholder="Event Type/Occasion" class="bg-gray-100 border border-gray-300 rounded-lg p-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400 w-full">
                         <input id="attendees" type="text" placeholder="Number of Attendees" class="bg-gray-100 border border-gray-300 rounded-lg p-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400 w-full">
-                        <input id="eventDate" type="date" class="bg-gray-100 border border-gray-300 rounded-lg p-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400 w-full">
-                        <input id="eventTime" type="text" placeholder="Time of Event?" class="bg-gray-100 border border-gray-300 rounded-lg p-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400 w-full">
+                        <input id="eventDateTime" type="datetime-local" class="bg-gray-100 border border-gray-300 rounded-lg p-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400 w-full">
                         <input id="referral" type="text" placeholder="How did you hear about Josh?" class="bg-gray-100 border border-gray-300 rounded-lg p-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400 w-full">
                     </div>
                     <div class="mb-6">
@@ -297,8 +296,7 @@
                 phone: document.getElementById('phone').value,
                 eventType: document.getElementById('eventType').value,
                 attendees: document.getElementById('attendees').value,
-                eventDate: document.getElementById('eventDate').value,
-                eventTime: document.getElementById('eventTime').value,
+                eventDateTime: document.getElementById('eventDateTime').value,
                 referral: document.getElementById('referral').value,
                 message: document.getElementById('message').value,
             };
