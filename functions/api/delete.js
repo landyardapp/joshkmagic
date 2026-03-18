@@ -3,7 +3,7 @@ import { neon } from '@neondatabase/serverless';
 export async function onRequestDelete(context) {
   const { request, env } = context;
 
-  if (request.headers.get('x-admin-password') !== env.ADMIN_PASSWORD) {
+  if (request.headers.get('x-admin-password')?.trim() !== env.ADMIN_PASSWORD) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
