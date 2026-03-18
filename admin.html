@@ -71,6 +71,7 @@
       <div class="max-w-7xl mx-auto flex gap-8">
         <div class="text-sm text-gray-500">Total Inquiries: <span id="stat-total" class="font-bold text-gray-900">—</span></div>
         <div class="text-sm text-gray-500">This Week: <span id="stat-week" class="font-bold text-gray-900">—</span></div>
+        <div class="text-sm text-gray-500">Reviews: <span id="stat-reviews" class="font-bold text-gray-900">—</span></div>
       </div>
     </div>
 
@@ -79,7 +80,6 @@
       <div class="max-w-7xl mx-auto flex gap-6">
         <button id="tab-submissions" onclick="switchTab('submissions')" class="py-3 text-sm font-semibold border-b-2 border-amber-400 text-amber-500 transition">Submissions</button>
         <button id="tab-reviews" onclick="switchTab('reviews')" class="py-3 text-sm font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-900 transition">Google Reviews</button>
-        <!-- count appended by JS -->
       </div>
     </div>
 
@@ -100,19 +100,19 @@
           <div id="load-error" class="hidden text-center py-20 text-red-500"></div>
           <div id="empty-state" class="hidden text-center py-20 text-gray-400">No submissions yet.</div>
 
-          <div id="table-wrap" class="hidden overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
-            <table class="w-full text-sm text-left">
+          <div id="table-wrap" class="hidden rounded-xl border border-gray-200 shadow-sm" style="max-width:100%;overflow-x:hidden;">
+            <table class="w-full text-sm text-left" style="table-layout:fixed;">
               <thead class="bg-gray-50 text-gray-500 uppercase text-xs tracking-wide">
                 <tr>
-                  <th class="px-4 py-3 font-semibold">Date</th>
-                  <th class="px-4 py-3 font-semibold">Name</th>
-                  <th class="px-4 py-3 font-semibold">Email</th>
-                  <th class="px-4 py-3 font-semibold">Phone</th>
-                  <th class="px-4 py-3 font-semibold">Event Type</th>
-                  <th class="px-4 py-3 font-semibold">Event Date</th>
-                  <th class="px-4 py-3 font-semibold">Guests</th>
-                  <th class="px-4 py-3 font-semibold">Message</th>
-                  <th class="px-4 py-3 font-semibold"></th>
+                  <th class="px-3 py-3 font-semibold w-24 hidden md:table-cell">Date</th>
+                  <th class="px-3 py-3 font-semibold w-28">Name</th>
+                  <th class="px-3 py-3 font-semibold w-40 hidden sm:table-cell">Email</th>
+                  <th class="px-3 py-3 font-semibold w-28 hidden lg:table-cell">Phone</th>
+                  <th class="px-3 py-3 font-semibold w-28 hidden lg:table-cell">Event Type</th>
+                  <th class="px-3 py-3 font-semibold w-24 hidden xl:table-cell">Event Date</th>
+                  <th class="px-3 py-3 font-semibold w-16 hidden xl:table-cell">Guests</th>
+                  <th class="px-3 py-3 font-semibold">Message</th>
+                  <th class="px-3 py-3 font-semibold w-16"></th>
                 </tr>
               </thead>
               <tbody id="submissions-body" class="divide-y divide-gray-100 bg-white"></tbody>
@@ -215,6 +215,9 @@
       document.getElementById('dashboard').classList.remove('hidden');
       renderSubmissions(data.submissions);
       loadSettings();
+      fetch('/api/reviews').then(r => r.json()).then(d => {
+        document.getElementById('stat-reviews').textContent = (d.reviews || []).length;
+      }).catch(() => {});
     }
 
     async function loadSubmissions() {
@@ -254,14 +257,14 @@
       const tbody = document.getElementById('submissions-body');
       tbody.innerHTML = submissions.map(s => `
         <tr class="hover:bg-gray-50 transition" data-id="${s.id}">
-          <td class="px-4 py-3 whitespace-nowrap text-gray-500">${formatDate(s.created_at)}</td>
-          <td class="px-4 py-3 font-semibold text-gray-900 whitespace-nowrap">${esc(s.name)}</td>
-          <td class="px-4 py-3"><a href="mailto:${esc(s.email)}" class="gold hover:underline">${esc(s.email)}</a></td>
-          <td class="px-4 py-3 whitespace-nowrap text-gray-600">${esc(s.phone || '—')}</td>
-          <td class="px-4 py-3 whitespace-nowrap text-gray-600">${esc(s.event_type || '—')}</td>
-          <td class="px-4 py-3 whitespace-nowrap text-gray-600">${esc(s.event_date || '—')}</td>
-          <td class="px-4 py-3 whitespace-nowrap text-gray-600">${esc(s.attendees || '—')}</td>
-          <td class="px-4 py-3 max-w-xs">
+          <td class="px-3 py-3 whitespace-nowrap text-gray-500 hidden md:table-cell">${formatDate(s.created_at)}</td>
+          <td class="px-3 py-3 font-semibold text-gray-900 truncate">${esc(s.name)}</td>
+          <td class="px-3 py-3 hidden sm:table-cell"><a href="mailto:${esc(s.email)}" class="gold hover:underline truncate block">${esc(s.email)}</a></td>
+          <td class="px-3 py-3 whitespace-nowrap text-gray-600 hidden lg:table-cell">${esc(s.phone || '—')}</td>
+          <td class="px-3 py-3 whitespace-nowrap text-gray-600 hidden lg:table-cell">${esc(s.event_type || '—')}</td>
+          <td class="px-3 py-3 whitespace-nowrap text-gray-600 hidden xl:table-cell">${esc(s.event_date || '—')}</td>
+          <td class="px-3 py-3 whitespace-nowrap text-gray-600 hidden xl:table-cell">${esc(s.attendees || '—')}</td>
+          <td class="px-3 py-3">
             <span class="text-gray-600 cursor-pointer hover:text-gray-900 underline underline-offset-2 decoration-dotted"
               onclick="openModal(${s.id})">
               ${esc(s.message.length > 60 ? s.message.slice(0, 60) + '…' : s.message)}
@@ -419,7 +422,7 @@
 
     function renderReviews(reviews) {
       reviewsList = reviews;
-      document.getElementById('tab-reviews').textContent = `Google Reviews (${reviews.length})`;
+      document.getElementById('stat-reviews').textContent = reviews.length;
       document.getElementById('reviews-loading').classList.add('hidden');
       if (!reviews.length) {
         document.getElementById('reviews-empty').classList.remove('hidden');
