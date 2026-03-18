@@ -255,7 +255,7 @@
              <p class="mb-2">JoshyKmagic@gmail.com | 516-279-9220</p>
              <p class="text-sm">Serving NYC, New Jersey, Long Island, Connecticut, and beyond.</p>
              <p class="text-xs mt-8 text-gray-500">&copy; 2025 Josh Magic. All Rights Reserved.</p>
-             <p class="text-xs mt-2 text-gray-400"><!--BUILD_INFO--></p>
+             <p id="build-info" class="text-xs mt-2 text-gray-400"></p>
         </div>
     </footer>
 
@@ -280,6 +280,12 @@
                 }
             });
         });
+
+        // Build info
+        fetch('/api/build-info')
+          .then(r => r.json())
+          .then(d => { if (d.build) document.getElementById('build-info').textContent = d.build; })
+          .catch(() => {});
 
         // Contact form submission
         document.getElementById('contact-form').addEventListener('submit', async (e) => {

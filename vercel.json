@@ -1,5 +1,3 @@
 {
-  "version": 2,
-  "buildCommand": "node build.js",
-  "outputDirectory": "."
+  "version": 2
 }
