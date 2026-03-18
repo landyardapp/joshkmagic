@@ -59,9 +59,6 @@
             </button>
           </div>
           <span id="save-status" class="text-green-600 text-sm font-medium hidden">Saved!</span>
-          <button id="setup-btn" class="text-sm text-gray-500 hover:text-gray-900 transition border border-gray-300 rounded-lg px-4 py-2">
-            Run Setup
-          </button>
           <button id="logout-btn" class="text-sm text-gray-500 hover:text-gray-900 transition border border-gray-300 rounded-lg px-4 py-2">
             Logout
           </button>
@@ -82,6 +79,7 @@
       <div class="max-w-7xl mx-auto flex gap-6">
         <button id="tab-submissions" onclick="switchTab('submissions')" class="py-3 text-sm font-semibold border-b-2 border-amber-400 text-amber-500 transition">Submissions</button>
         <button id="tab-reviews" onclick="switchTab('reviews')" class="py-3 text-sm font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-900 transition">Google Reviews</button>
+        <!-- count appended by JS -->
       </div>
     </div>
 
@@ -129,7 +127,7 @@
           </div>
 
           <!-- Add Review Form -->
-          <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-8 max-w-2xl">
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-8">
             <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wide mb-4">Add Review</h3>
             <form id="review-form" class="space-y-4">
               <input id="review-author" type="text" placeholder="Reviewer name" required
@@ -148,7 +146,7 @@
           <!-- Reviews List -->
           <div id="reviews-loading" class="text-center py-10 text-gray-400">Loading reviews...</div>
           <div id="reviews-empty" class="hidden text-center py-10 text-gray-400">No reviews yet. Add one above.</div>
-          <div id="reviews-list" class="hidden space-y-4 max-w-2xl"></div>
+          <div id="reviews-list" class="hidden space-y-4"></div>
         </div>
 
       </div>
@@ -386,24 +384,7 @@
 
     document.getElementById('refresh-btn').addEventListener('click', loadSubmissions);
 
-    document.getElementById('setup-btn').addEventListener('click', async () => {
-      if (!confirm('Run database setup? Safe to run multiple times.')) return;
-      const btn = document.getElementById('setup-btn');
-      btn.disabled = true;
-      btn.textContent = 'Running…';
-      try {
-        const res = await fetch('/api/setup', { headers: { 'x-admin-password': password } });
-        const data = await res.json();
-        alert(data.message || data.error || 'Done.');
-      } catch {
-        alert('Setup failed.');
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Run Setup';
-      }
-    });
-
-    // --- Tabs ---
+// --- Tabs ---
     function switchTab(tab) {
       const tabs = ['submissions', 'reviews'];
       tabs.forEach(t => {
@@ -438,6 +419,7 @@
 
     function renderReviews(reviews) {
       reviewsList = reviews;
+      document.getElementById('tab-reviews').textContent = `Google Reviews (${reviews.length})`;
       document.getElementById('reviews-loading').classList.add('hidden');
       if (!reviews.length) {
         document.getElementById('reviews-empty').classList.remove('hidden');
