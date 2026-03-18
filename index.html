@@ -437,6 +437,9 @@
             }
 
             timer = setInterval(() => goTo((current + 1) % slides.length), 12000);
+
+            rotator.style.cursor = 'pointer';
+            rotator.addEventListener('click', () => goTo((current + 1) % slides.length));
         })();
 
         // Contact form submission
