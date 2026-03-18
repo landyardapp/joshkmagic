@@ -357,7 +357,7 @@
     <!-- Footer -->
     <footer class="bg-gray-100 text-gray-700 py-12 border-t border-gray-200">
         <div class="container mx-auto px-6 text-center">
-             <a href="#" class="text-2xl font-bold font-playfair text-black mb-4 inline-block">Josh Kurzban&nbsp; <span class="text-amber-400">Magic</span></a>
+             <a href="#" class="text-2xl font-bold font-playfair text-black mb-4 inline-block">Josh Kurzban&nbsp; <span class="text-amber-400 relative" id="magic-word-footer">Magic</span></a>
              <div class="flex justify-center space-x-6 my-6">
                  <a href="https://www.facebook.com/Joshkmagic/" target="_blank" class="hover:text-black transition">Facebook</a>
                  <a href="https://www.youtube.com/user/JazzyJMagic" target="_blank" class="hover:text-black transition">YouTube</a>
@@ -403,6 +403,25 @@
             }
 
             setTimeout(burst, 1000);
+
+            const elFooter = document.getElementById('magic-word-footer');
+            function spawnFooterSparkle() {
+                const s = document.createElement('span');
+                s.className = 'sparkle-particle';
+                s.textContent = shapes[Math.floor(Math.random() * shapes.length)];
+                const size = 8 + Math.random() * 8;
+                const x = -10 + Math.random() * 110;
+                const y = -20 + Math.random() * 120;
+                s.style.cssText = `left:${x}%;top:${y}%;font-size:${size}px;color:${colors[Math.floor(Math.random() * colors.length)]};line-height:1;`;
+                elFooter.appendChild(s);
+                setTimeout(() => s.remove(), 950);
+            }
+            function burstFooter() {
+                const count = 2 + Math.floor(Math.random() * 3);
+                for (let i = 0; i < count; i++) setTimeout(spawnFooterSparkle, i * 120);
+                setTimeout(burstFooter, 2500 + Math.random() * 2000);
+            }
+            setTimeout(burstFooter, 2000);
         })();
 
         // Mobile menu toggle
