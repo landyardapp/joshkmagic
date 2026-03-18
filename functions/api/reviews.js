@@ -2,18 +2,18 @@ export async function onRequestGet(context) {
   const { env } = context;
 
   try {
-    // Step 1: resolve current Place ID using CID (stable identifier from Google Maps URL)
-    const cidUrl = `https://maps.googleapis.com/maps/api/place/details/json?cid=16698301330846546909&fields=place_id,name&key=${env.GOOGLE_PLACES_API_KEY}`;
-    const cidRes = await fetch(cidUrl);
-    const cidData = await cidRes.json();
-    const placeId = cidData.result?.place_id;
+    // Step 1: find Place ID via text search
+    const searchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=Joshy+K+magician+New+York&key=${env.GOOGLE_PLACES_API_KEY}`;
+    const searchRes = await fetch(searchUrl);
+    const searchData = await searchRes.json();
+    const placeId = searchData.results?.[0]?.place_id;
 
     if (!placeId) {
-      return Response.json({ reviews: [], _debug: { cid_status: cidData.status, cid_error: cidData.error_message } });
+      return Response.json({ reviews: [], _debug: { search_status: searchData.status, search_error: searchData.error_message, http_status: searchRes.status } });
     }
 
     // Step 2: fetch reviews using the resolved Place ID
-    const detailUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=reviews&key=${env.GOOGLE_PLACES_API_KEY}&reviews_sort=newest`;
+    const detailUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=reviews,name&key=${env.GOOGLE_PLACES_API_KEY}&reviews_sort=newest`;
     const detailRes = await fetch(detailUrl);
     const detailData = await detailRes.json();
 
@@ -25,7 +25,7 @@ export async function onRequestGet(context) {
         time: r.relative_time_description,
       }));
 
-    return Response.json({ reviews, _debug: { placeId, raw_count: detailData.result?.reviews?.length ?? 0 } });
+    return Response.json({ reviews, _debug: { placeId, name: detailData.result?.name, raw_count: detailData.result?.reviews?.length ?? 0 } });
   } catch (err) {
     console.error('Reviews error:', err);
     return Response.json({ reviews: [], _debug: { error: err.message } });
