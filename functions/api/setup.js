@@ -1,11 +1,15 @@
-const { sql } = require('@vercel/postgres');
+import { neon } from '@neondatabase/serverless';
 
-module.exports = async (req, res) => {
-  if (req.headers['x-admin-password'] !== process.env.ADMIN_PASSWORD) {
-    return res.status(401).json({ error: 'Unauthorized' });
+export async function onRequestGet(context) {
+  const { request, env } = context;
+
+  if (request.headers.get('x-admin-password') !== env.ADMIN_PASSWORD) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
+    const sql = neon(env.POSTGRES_URL);
+
     await sql`
       CREATE TABLE IF NOT EXISTS submissions (
         id SERIAL PRIMARY KEY,
@@ -31,13 +35,13 @@ module.exports = async (req, res) => {
 
     await sql`
       INSERT INTO settings (key, value)
-      VALUES ('notification_email', ${process.env.DEFAULT_NOTIFICATION_EMAIL || 'acpaulley@gmail.com'})
+      VALUES ('notification_email', ${env.DEFAULT_NOTIFICATION_EMAIL || 'acpaulley@gmail.com'})
       ON CONFLICT (key) DO NOTHING
     `;
 
-    return res.status(200).json({ success: true, message: 'Database initialized successfully.' });
+    return Response.json({ success: true, message: 'Database initialized successfully.' });
   } catch (err) {
     console.error('Setup error:', err);
-    return res.status(500).json({ error: err.message });
+    return Response.json({ error: err.message }, { status: 500 });
   }
-};
+}

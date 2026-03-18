@@ -1,8 +1,9 @@
-module.exports = async (req, res) => {
-  const sha = process.env.VERCEL_GIT_COMMIT_SHA || null;
+export async function onRequestGet(context) {
+  const { env } = context;
+  const sha = env.CF_PAGES_COMMIT_SHA || null;
 
   if (!sha) {
-    return res.status(200).json({ build: 'local' });
+    return Response.json({ build: 'local' });
   }
 
   try {
@@ -18,8 +19,8 @@ module.exports = async (req, res) => {
       timeZone: 'America/New_York'
     }) + ' ET';
 
-    return res.status(200).json({ build: `Build ${sha.slice(0, 7)} · ${formatted}` });
-  } catch (err) {
-    return res.status(200).json({ build: `Build ${sha.slice(0, 7)}` });
+    return Response.json({ build: `Build ${sha.slice(0, 7)} · ${formatted}` });
+  } catch {
+    return Response.json({ build: `Build ${sha.slice(0, 7)}` });
   }
-};
+}
