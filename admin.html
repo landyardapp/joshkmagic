@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Josh Kurzban Magic</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Montserrat', sans-serif; }
+    .gold { color: #D4AF37; }
+    .bg-gold { background-color: #D4AF37; }
+    .border-gold { border-color: #D4AF37; }
+    .ring-gold:focus { outline: none; box-shadow: 0 0 0 2px #D4AF37; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+  <!-- Login Screen -->
+  <div id="login-screen" class="min-h-screen flex items-center justify-center">
+    <div class="bg-white rounded-xl shadow-lg p-10 w-full max-w-sm border border-gray-200">
+      <h1 class="text-2xl font-bold text-center mb-1">Josh Kurzban <span class="gold">Magic</span></h1>
+      <p class="text-center text-gray-500 text-sm mb-8">Admin Panel</p>
+      <form id="login-form">
+        <label class="block text-sm font-semibold text-gray-700 mb-2">Password</label>
+        <input
+          id="password-input"
+          type="password"
+          placeholder="Enter admin password"
+          class="w-full border border-gray-300 rounded-lg p-3 text-gray-900 mb-4 focus:outline-none focus:ring-2 focus:ring-amber-400"
+          required
+        >
+        <div id="login-error" class="hidden text-red-600 text-sm mb-4 text-center">Incorrect password.</div>
+        <button type="submit" class="bg-gold w-full py-3 rounded-lg font-bold text-gray-900 hover:brightness-105 transition">
+          Sign In
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dashboard" class="hidden min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-10">
+      <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <h1 class="text-xl font-bold">Josh Kurzban <span class="gold">Magic</span> <span class="text-gray-400 font-normal text-base">— Admin</span></h1>
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full md:w-auto">
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <label class="text-sm font-semibold text-gray-600 whitespace-nowrap">Notify:</label>
+            <input
+              id="notify-email"
+              type="email"
+              class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 w-full sm:w-64"
+              placeholder="Notification email"
+            >
+            <button id="save-email-btn" class="bg-gold px-4 py-2 rounded-lg text-sm font-bold text-gray-900 hover:brightness-105 transition whitespace-nowrap">
+              Save
+            </button>
+          </div>
+          <span id="save-status" class="text-green-600 text-sm font-medium hidden">Saved!</span>
+          <button id="logout-btn" class="text-sm text-gray-500 hover:text-gray-900 transition border border-gray-300 rounded-lg px-4 py-2">
+            Logout
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Stats Bar -->
+    <div class="bg-white border-b border-gray-100 px-6 py-3">
+      <div class="max-w-7xl mx-auto flex gap-8">
+        <div class="text-sm text-gray-500">Total Inquiries: <span id="stat-total" class="font-bold text-gray-900">—</span></div>
+        <div class="text-sm text-gray-500">This Week: <span id="stat-week" class="font-bold text-gray-900">—</span></div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-1 px-6 py-8">
+      <div class="max-w-7xl mx-auto">
+
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-lg font-bold text-gray-900">Submissions</h2>
+          <button id="refresh-btn" class="text-sm text-gray-500 hover:text-gray-900 transition border border-gray-200 rounded-lg px-3 py-1.5">
+            Refresh
+          </button>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading" class="text-center py-20 text-gray-400">Loading submissions...</div>
+
+        <!-- Error -->
+        <div id="load-error" class="hidden text-center py-20 text-red-500"></div>
+
+        <!-- Empty state -->
+        <div id="empty-state" class="hidden text-center py-20 text-gray-400">No submissions yet.</div>
+
+        <!-- Table -->
+        <div id="table-wrap" class="hidden overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
+          <table class="w-full text-sm text-left">
+            <thead class="bg-gray-50 text-gray-500 uppercase text-xs tracking-wide">
+              <tr>
+                <th class="px-4 py-3 font-semibold">Date</th>
+                <th class="px-4 py-3 font-semibold">Name</th>
+                <th class="px-4 py-3 font-semibold">Email</th>
+                <th class="px-4 py-3 font-semibold">Phone</th>
+                <th class="px-4 py-3 font-semibold">Event Type</th>
+                <th class="px-4 py-3 font-semibold">Event Date</th>
+                <th class="px-4 py-3 font-semibold">Guests</th>
+                <th class="px-4 py-3 font-semibold">Message</th>
+                <th class="px-4 py-3 font-semibold"></th>
+              </tr>
+            </thead>
+            <tbody id="submissions-body" class="divide-y divide-gray-100 bg-white"></tbody>
+          </table>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Message Modal -->
+  <div id="modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+        <h3 class="font-bold text-lg" id="modal-title">Submission Details</h3>
+        <button id="modal-close" class="text-gray-400 hover:text-gray-900 transition text-2xl leading-none">&times;</button>
+      </div>
+      <div id="modal-body" class="px-6 py-5 space-y-3 text-sm"></div>
+    </div>
+  </div>
+
+  <script>
+    let password = '';
+    let submissions = [];
+
+    // --- Auth ---
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const candidate = document.getElementById('password-input').value;
+      // Verify by hitting a protected endpoint
+      const res = await fetch('/api/submissions', {
+        headers: { 'x-admin-password': candidate }
+      });
+      if (res.ok) {
+        password = candidate;
+        sessionStorage.setItem('admin_pw', password);
+        showDashboard(await res.json());
+      } else {
+        document.getElementById('login-error').classList.remove('hidden');
+      }
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      password = '';
+      sessionStorage.removeItem('admin_pw');
+      document.getElementById('dashboard').classList.add('hidden');
+      document.getElementById('login-screen').classList.remove('hidden');
+      document.getElementById('password-input').value = '';
+    });
+
+    // Auto-login if session exists
+    window.addEventListener('load', async () => {
+      const saved = sessionStorage.getItem('admin_pw');
+      if (saved) {
+        const res = await fetch('/api/submissions', {
+          headers: { 'x-admin-password': saved }
+        });
+        if (res.ok) {
+          password = saved;
+          showDashboard(await res.json());
+        } else {
+          sessionStorage.removeItem('admin_pw');
+        }
+      }
+    });
+
+    // --- Dashboard ---
+    async function showDashboard(data) {
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('dashboard').classList.remove('hidden');
+      renderSubmissions(data.submissions);
+      loadSettings();
+    }
+
+    async function loadSubmissions() {
+      document.getElementById('loading').classList.remove('hidden');
+      document.getElementById('table-wrap').classList.add('hidden');
+      document.getElementById('empty-state').classList.add('hidden');
+      document.getElementById('load-error').classList.add('hidden');
+      try {
+        const res = await fetch('/api/submissions', {
+          headers: { 'x-admin-password': password }
+        });
+        const data = await res.json();
+        renderSubmissions(data.submissions);
+      } catch (err) {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('load-error').textContent = 'Failed to load submissions.';
+        document.getElementById('load-error').classList.remove('hidden');
+      }
+    }
+
+    function renderSubmissions(subs) {
+      submissions = subs || [];
+      document.getElementById('loading').classList.add('hidden');
+
+      // Stats
+      document.getElementById('stat-total').textContent = submissions.length;
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const thisWeek = submissions.filter(s => new Date(s.created_at) >= weekAgo).length;
+      document.getElementById('stat-week').textContent = thisWeek;
+
+      if (submissions.length === 0) {
+        document.getElementById('empty-state').classList.remove('hidden');
+        return;
+      }
+
+      document.getElementById('table-wrap').classList.remove('hidden');
+      const tbody = document.getElementById('submissions-body');
+      tbody.innerHTML = submissions.map(s => `
+        <tr class="hover:bg-gray-50 transition" data-id="${s.id}">
+          <td class="px-4 py-3 whitespace-nowrap text-gray-500">${formatDate(s.created_at)}</td>
+          <td class="px-4 py-3 font-semibold text-gray-900 whitespace-nowrap">${esc(s.name)}</td>
+          <td class="px-4 py-3"><a href="mailto:${esc(s.email)}" class="gold hover:underline">${esc(s.email)}</a></td>
+          <td class="px-4 py-3 whitespace-nowrap text-gray-600">${esc(s.phone || '—')}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-gray-600">${esc(s.event_type || '—')}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-gray-600">${esc(s.event_date || '—')}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-gray-600">${esc(s.attendees || '—')}</td>
+          <td class="px-4 py-3 max-w-xs">
+            <span class="text-gray-600 cursor-pointer hover:text-gray-900 underline underline-offset-2 decoration-dotted"
+              onclick="openModal(${s.id})">
+              ${esc(s.message.length > 60 ? s.message.slice(0, 60) + '…' : s.message)}
+            </span>
+          </td>
+          <td class="px-4 py-3 whitespace-nowrap text-right">
+            <button onclick="deleteSubmission(${s.id}, this)" class="text-red-400 hover:text-red-600 transition text-xs font-semibold border border-red-200 rounded px-2 py-1 hover:border-red-400">
+              Delete
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // --- Settings ---
+    async function loadSettings() {
+      try {
+        const res = await fetch('/api/settings', {
+          headers: { 'x-admin-password': password }
+        });
+        const data = await res.json();
+        if (data.notification_email) {
+          document.getElementById('notify-email').value = data.notification_email;
+        }
+      } catch (err) {
+        console.error('Failed to load settings:', err);
+      }
+    }
+
+    document.getElementById('save-email-btn').addEventListener('click', async () => {
+      const email = document.getElementById('notify-email').value.trim();
+      if (!email) return;
+      const btn = document.getElementById('save-email-btn');
+      btn.disabled = true;
+      btn.textContent = 'Saving…';
+      try {
+        await fetch('/api/settings', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-admin-password': password
+          },
+          body: JSON.stringify({ notification_email: email })
+        });
+        const status = document.getElementById('save-status');
+        status.classList.remove('hidden');
+        setTimeout(() => status.classList.add('hidden'), 2000);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Save';
+      }
+    });
+
+    // --- Delete ---
+    async function deleteSubmission(id, btn) {
+      if (!confirm('Delete this submission? This cannot be undone.')) return;
+      btn.disabled = true;
+      btn.textContent = '…';
+      const res = await fetch(`/api/delete?id=${id}`, {
+        method: 'DELETE',
+        headers: { 'x-admin-password': password }
+      });
+      if (res.ok) {
+        btn.closest('tr').remove();
+        submissions = submissions.filter(s => s.id !== id);
+        document.getElementById('stat-total').textContent = submissions.length;
+        if (submissions.length === 0) {
+          document.getElementById('table-wrap').classList.add('hidden');
+          document.getElementById('empty-state').classList.remove('hidden');
+        }
+      } else {
+        btn.disabled = false;
+        btn.textContent = 'Delete';
+        alert('Failed to delete submission.');
+      }
+    }
+
+    // --- Modal ---
+    function openModal(id) {
+      const s = submissions.find(s => s.id === id);
+      if (!s) return;
+      document.getElementById('modal-title').textContent = `Inquiry from ${s.name}`;
+      document.getElementById('modal-body').innerHTML = `
+        <div class="grid grid-cols-2 gap-y-3 gap-x-6">
+          ${field('Date', formatDate(s.created_at))}
+          ${field('Name', s.name)}
+          ${field('Email', `<a href="mailto:${esc(s.email)}" class="gold hover:underline">${esc(s.email)}</a>`)}
+          ${field('Phone', s.phone || '—')}
+          ${field('Event Type', s.event_type || '—')}
+          ${field('Event Date', s.event_date || '—')}
+          ${field('Event Time', s.event_time || '—')}
+          ${field('Attendees', s.attendees || '—')}
+          ${field('How They Heard', s.referral || '—')}
+        </div>
+        <div class="mt-4 pt-4 border-t border-gray-100">
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Message</p>
+          <p class="text-gray-800 leading-relaxed whitespace-pre-wrap">${esc(s.message)}</p>
+        </div>
+      `;
+      document.getElementById('modal').classList.remove('hidden');
+    }
+
+    function field(label, value) {
+      return `
+        <div>
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">${label}</p>
+          <p class="text-gray-800 mt-0.5">${value}</p>
+        </div>
+      `;
+    }
+
+    document.getElementById('modal-close').addEventListener('click', () => {
+      document.getElementById('modal').classList.add('hidden');
+    });
+    document.getElementById('modal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('modal')) {
+        document.getElementById('modal').classList.add('hidden');
+      }
+    });
+
+    document.getElementById('refresh-btn').addEventListener('click', loadSubmissions);
+
+    // --- Helpers ---
+    function formatDate(iso) {
+      return new Date(iso).toLocaleDateString('en-US', {
+        month: 'short', day: 'numeric', year: 'numeric',
+        hour: 'numeric', minute: '2-digit'
+      });
+    }
+
+    function esc(str) {
+      return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+  </script>
+</body>
+</html>

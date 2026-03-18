@@ -219,24 +219,25 @@
                 <p class="text-lg text-gray-600 mb-12 max-w-2xl mx-auto">Ready to make your event legendary? Fill out the form below or contact me directly to get a personalized quote.</p>
             </div>
             <div class="max-w-2xl mx-auto bg-white p-8 rounded-lg border border-gray-200 shadow-lg">
-                <form action="#" method="POST">
+                <form id="contact-form">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <input type="text" placeholder="Your Name" class="bg-gray-100 border border-gray-300 rounded-lg p-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400 w-full" required>
-                        <input type="email" placeholder="Your Email" class="bg-gray-100 border border-gray-300 rounded-lg p-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400 w-full" required>
+                        <input id="name" type="text" placeholder="Your Name" class="bg-gray-100 border border-gray-300 rounded-lg p-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400 w-full" required>
+                        <input id="email" type="email" placeholder="Your Email" class="bg-gray-100 border border-gray-300 rounded-lg p-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400 w-full" required>
                     </div>
-                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <input type="text" placeholder="Cell Phone Number" class="bg-gray-100 border border-gray-300 rounded-lg p-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400 w-full">
-						 <input type="text" placeholder="Event Type/Occaision" class="bg-gray-100 border border-gray-300 rounded-lg p-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400 w-full">
-						 <input type="text" placeholder="Number of Attendees" class="bg-gray-100 border border-gray-300 rounded-lg p-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400 w-full">
-                        <input type="date" placeholder="Event Date" class="bg-gray-100 border border-gray-300 rounded-lg p-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400 w-full">
-						 <input type="text" placeholder="Time of Event?" class="bg-gray-100 border border-gray-300 rounded-lg p-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400 w-full">
-						 <input type="text" placeholder="How did you hear about Josh?" class="bg-gray-100 border border-gray-300 rounded-lg p-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400 w-full">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <input id="phone" type="text" placeholder="Cell Phone Number" class="bg-gray-100 border border-gray-300 rounded-lg p-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400 w-full">
+                        <input id="eventType" type="text" placeholder="Event Type/Occasion" class="bg-gray-100 border border-gray-300 rounded-lg p-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400 w-full">
+                        <input id="attendees" type="text" placeholder="Number of Attendees" class="bg-gray-100 border border-gray-300 rounded-lg p-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400 w-full">
+                        <input id="eventDate" type="date" class="bg-gray-100 border border-gray-300 rounded-lg p-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400 w-full">
+                        <input id="eventTime" type="text" placeholder="Time of Event?" class="bg-gray-100 border border-gray-300 rounded-lg p-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400 w-full">
+                        <input id="referral" type="text" placeholder="How did you hear about Josh?" class="bg-gray-100 border border-gray-300 rounded-lg p-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400 w-full">
                     </div>
                     <div class="mb-6">
-                        <textarea placeholder="Tell me about your event..." rows="4" class="bg-gray-100 border border-gray-300 rounded-lg p-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400 w-full" required></textarea>
+                        <textarea id="message" placeholder="Tell me about your event..." rows="4" class="bg-gray-100 border border-gray-300 rounded-lg p-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400 w-full" required></textarea>
                     </div>
+                    <div id="form-status" class="hidden mb-4"></div>
                     <div class="text-center">
-                         <button type="submit" class="btn-gold font-bold py-3 px-10 rounded-lg text-lg w-full md:w-auto">Send Inquiry</button>
+                        <button id="submit-btn" type="submit" class="btn-gold font-bold py-3 px-10 rounded-lg text-lg w-full md:w-auto">Send Inquiry</button>
                     </div>
                 </form>
             </div>
@@ -278,6 +279,52 @@
                     mobileMenu.classList.add('hidden');
                 }
             });
+        });
+
+        // Contact form submission
+        document.getElementById('contact-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submit-btn');
+            const status = document.getElementById('form-status');
+
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+            status.className = 'hidden mb-4';
+
+            const data = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                eventType: document.getElementById('eventType').value,
+                attendees: document.getElementById('attendees').value,
+                eventDate: document.getElementById('eventDate').value,
+                eventTime: document.getElementById('eventTime').value,
+                referral: document.getElementById('referral').value,
+                message: document.getElementById('message').value,
+            };
+
+            try {
+                const res = await fetch('/api/contact', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                });
+                const result = await res.json();
+                if (res.ok) {
+                    status.textContent = 'Thank you! Your inquiry has been sent. Josh will be in touch soon.';
+                    status.className = 'mb-4 p-4 bg-green-100 text-green-800 rounded-lg text-center text-sm font-medium';
+                    e.target.reset();
+                } else {
+                    status.textContent = result.error || 'Something went wrong. Please try again.';
+                    status.className = 'mb-4 p-4 bg-red-100 text-red-800 rounded-lg text-center text-sm font-medium';
+                }
+            } catch (err) {
+                status.textContent = 'Network error. Please check your connection and try again.';
+                status.className = 'mb-4 p-4 bg-red-100 text-red-800 rounded-lg text-center text-sm font-medium';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Send Inquiry';
+            }
         });
     </script>
 </body>
