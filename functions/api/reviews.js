@@ -10,7 +10,7 @@ export async function onRequestGet(context) {
         'X-Goog-Api-Key': env.GOOGLE_PLACES_API_KEY,
         'X-Goog-FieldMask': 'places.id,places.displayName',
       },
-      body: JSON.stringify({ textQuery: 'Joshy K NY Magician Mentalist New York' }),
+      body: JSON.stringify({ textQuery: 'Josh Kurzban magician New York' }),
     });
     const searchData = await searchRes.json();
     const placeId = searchData.places?.[0]?.id;
