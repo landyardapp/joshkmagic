@@ -52,6 +52,24 @@
             backdrop-filter: blur(10px);
             background-color: rgba(255, 255, 255, 0.8);
         }
+        .marquee-container {
+            overflow: hidden;
+            -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+            mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+        }
+        .marquee-track {
+            display: inline-flex;
+            align-items: center;
+            animation: marquee 30s linear infinite;
+            white-space: nowrap;
+        }
+        .marquee-track:hover {
+            animation-play-state: paused;
+        }
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -106,15 +124,69 @@
     <section class="bg-gray-100 py-8">
         <div class="container mx-auto px-6">
             <h3 class="text-center text-gray-500 text-sm font-semibold tracking-widest uppercase">TRUSTED BY TOP BRANDS</h3>
-            <div class="flex flex-wrap justify-center items-center mt-6 gap-8 md:gap-12 opacity-70">
-                <img src="./assets/logos/linkedin-logo-png-transparent.png" alt="LinkedIn" class="h-10 w-32 object-contain">
-                <img src="./assets/logos/amazon-logo-transparent.png" alt="Amazon" class="h-10 w-32 object-contain">
-                <img src="./assets/logos/microsoft-logo-png-transparent.png" alt="Microsoft" class="h-10 w-32 object-contain">
-                <img src="./assets/logos/3m-logo-png-transparent.png" alt="3M" class="h-10 w-32 object-contain">
-                <img src="./assets/logos/at-t-504-logo-png-transparent.png" alt="AT&T" class="h-10 w-32 object-contain">
-                <img src="./assets/logos/brooklyn-nets-logo-transparent.png" alt="Brooklyn Nets" class="h-10 w-32 object-contain">
-                <img src="./assets/logos/ibm-logo-transparent.png" alt="IBM" class="h-10 w-32 object-contain">
-                <img src="./assets/logos/Sprint_Corporation_Logo.svg" alt="Sprint" class="h-10 w-32 object-contain">
+            <div class="marquee-container mt-6">
+                <div class="marquee-track">
+                <div class="flex items-center justify-center px-10">
+                    <img src="./assets/logos/linkedin-logo-png-transparent.png" alt="LinkedIn" class="h-14 object-contain opacity-70">
+                </div>
+                <div class="flex items-center justify-center px-10">
+                    <img src="./assets/logos/amazon-logo-transparent.png" alt="Amazon" class="h-14 object-contain opacity-70">
+                </div>
+                <div class="flex items-center justify-center px-10">
+                    <img src="./assets/logos/microsoft-logo-png-transparent.png" alt="Microsoft" class="h-14 object-contain opacity-70">
+                </div>
+                <div class="flex items-center justify-center px-10">
+                    <img src="./assets/logos/3m-logo-png-transparent.png" alt="3M" class="h-14 object-contain opacity-70">
+                </div>
+                <div class="flex items-center justify-center px-10">
+                    <img src="./assets/logos/bed-bath-and-beyond-logo-png-transparent.png" alt="Bed Bath &amp; Beyond" class="h-14 object-contain opacity-70">
+                </div>
+                <div class="flex items-center justify-center px-10">
+                    <img src="./assets/logos/at-t-504-logo-png-transparent.png" alt="AT&amp;T" class="h-14 object-contain opacity-70">
+                </div>
+                <div class="flex items-center justify-center px-10">
+                    <img src="./assets/logos/brooklyn-nets-logo-transparent.png" alt="Brooklyn Nets" class="h-14 object-contain opacity-70">
+                </div>
+                <div class="flex items-center justify-center px-10">
+                    <img src="./assets/logos/ibm-logo-transparent.png" alt="IBM" class="h-14 object-contain opacity-70">
+                </div>
+                <div class="flex items-center justify-center px-10">
+                    <img src="./assets/logos/jp-morgan-logo-png-transparent.png" alt="JP Morgan" class="h-14 object-contain opacity-70">
+                </div>
+                <div class="flex items-center justify-center px-10">
+                    <img src="./assets/logos/Sprint_Corporation_Logo.svg" alt="Sprint" class="h-14 object-contain opacity-70">
+                </div>
+                <div class="flex items-center justify-center px-10">
+                    <img src="./assets/logos/linkedin-logo-png-transparent.png" alt="LinkedIn" class="h-14 object-contain opacity-70">
+                </div>
+                <div class="flex items-center justify-center px-10">
+                    <img src="./assets/logos/amazon-logo-transparent.png" alt="Amazon" class="h-14 object-contain opacity-70">
+                </div>
+                <div class="flex items-center justify-center px-10">
+                    <img src="./assets/logos/microsoft-logo-png-transparent.png" alt="Microsoft" class="h-14 object-contain opacity-70">
+                </div>
+                <div class="flex items-center justify-center px-10">
+                    <img src="./assets/logos/3m-logo-png-transparent.png" alt="3M" class="h-14 object-contain opacity-70">
+                </div>
+                <div class="flex items-center justify-center px-10">
+                    <img src="./assets/logos/bed-bath-and-beyond-logo-png-transparent.png" alt="Bed Bath &amp; Beyond" class="h-14 object-contain opacity-70">
+                </div>
+                <div class="flex items-center justify-center px-10">
+                    <img src="./assets/logos/at-t-504-logo-png-transparent.png" alt="AT&amp;T" class="h-14 object-contain opacity-70">
+                </div>
+                <div class="flex items-center justify-center px-10">
+                    <img src="./assets/logos/brooklyn-nets-logo-transparent.png" alt="Brooklyn Nets" class="h-14 object-contain opacity-70">
+                </div>
+                <div class="flex items-center justify-center px-10">
+                    <img src="./assets/logos/ibm-logo-transparent.png" alt="IBM" class="h-14 object-contain opacity-70">
+                </div>
+                <div class="flex items-center justify-center px-10">
+                    <img src="./assets/logos/jp-morgan-logo-png-transparent.png" alt="JP Morgan" class="h-14 object-contain opacity-70">
+                </div>
+                <div class="flex items-center justify-center px-10">
+                    <img src="./assets/logos/Sprint_Corporation_Logo.svg" alt="Sprint" class="h-14 object-contain opacity-70">
+                </div>
+                </div>
             </div>
         </div>
     </section>
