@@ -8,6 +8,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Montserrat', sans-serif; }
+    @keyframes sparkle {
+      0%   { transform: scale(0) rotate(0deg);  opacity: 0; }
+      30%  { transform: scale(1) rotate(45deg); opacity: 1; }
+      100% { transform: scale(0) rotate(90deg); opacity: 0; }
+    }
+    .sparkle-particle { position: absolute; pointer-events: none; animation: sparkle 900ms ease-out forwards; }
     .gold { color: #D4AF37; }
     .bg-gold { background-color: #D4AF37; }
     .border-gold { border-color: #D4AF37; }
@@ -45,7 +51,7 @@
     <!-- Header -->
     <header class="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-10">
       <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <h1 class="text-xl font-bold">Josh Kurzban <span class="gold">Magic</span> <span class="text-gray-400 font-normal text-base">— Admin</span></h1>
+        <h1 class="text-xl font-bold">Josh Kurzban <span class="gold relative" id="magic-word">Magic</span> <span class="text-gray-400 font-normal text-base">— Admin</span></h1>
         <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full md:w-auto">
           <div class="flex items-center gap-2 w-full sm:w-auto">
             <label class="text-sm font-semibold text-gray-600 whitespace-nowrap">Notify:</label>
@@ -174,6 +180,28 @@
   </div>
 
   <script>
+    // Sparkle effect
+    (function() {
+      const el = document.getElementById('magic-word');
+      const shapes = ['✦','✧','⋆','★'];
+      const colors = ['#D4AF37','#f5d76e','#ffe599','#c9a227'];
+      function spawn() {
+        const s = document.createElement('span');
+        s.className = 'sparkle-particle';
+        s.textContent = shapes[Math.floor(Math.random() * shapes.length)];
+        const size = 8 + Math.random() * 8;
+        s.style.cssText = `left:${-10+Math.random()*110}%;top:${-20+Math.random()*120}%;font-size:${size}px;color:${colors[Math.floor(Math.random()*colors.length)]};line-height:1;`;
+        el.appendChild(s);
+        setTimeout(() => s.remove(), 950);
+      }
+      function burst() {
+        const count = 2 + Math.floor(Math.random() * 3);
+        for (let i = 0; i < count; i++) setTimeout(spawn, i * 120);
+        setTimeout(burst, 2500 + Math.random() * 2000);
+      }
+      setTimeout(burst, 1000);
+    })();
+
     let password = '';
     let submissions = [];
 
@@ -265,21 +293,16 @@
       document.getElementById('table-wrap').classList.remove('hidden');
       const tbody = document.getElementById('submissions-body');
       tbody.innerHTML = submissions.map(s => `
-        <tr class="hover:bg-gray-50 transition" data-id="${s.id}">
+        <tr class="hover:bg-gray-50 transition cursor-pointer" onclick="openModal(${s.id})">
           <td class="px-3 py-3 whitespace-nowrap text-gray-500">${formatDate(s.created_at)}</td>
           <td class="px-3 py-3 font-semibold text-gray-900 whitespace-nowrap">${esc(s.name)}</td>
-          <td class="px-3 py-3 whitespace-nowrap hidden sm:table-cell"><a href="mailto:${esc(s.email)}" class="gold hover:underline">${esc(s.email)}</a></td>
+          <td class="px-3 py-3 whitespace-nowrap hidden sm:table-cell text-gray-600">${esc(s.email)}</td>
           <td class="px-3 py-3 whitespace-nowrap text-gray-600 hidden lg:table-cell">${esc(s.phone || '—')}</td>
           <td class="px-3 py-3 whitespace-nowrap text-gray-600 hidden lg:table-cell">${esc(s.event_type || '—')}</td>
           <td class="px-3 py-3 whitespace-nowrap text-gray-600 hidden xl:table-cell">${esc(s.event_date || '—')}</td>
           <td class="px-3 py-3 whitespace-nowrap text-gray-600 hidden xl:table-cell">${esc(s.attendees || '—')}</td>
-          <td class="px-3 py-3">
-            <span class="text-gray-600 cursor-pointer hover:text-gray-900 underline underline-offset-2 decoration-dotted"
-              onclick="openModal(${s.id})">
-              ${esc(s.message.length > 60 ? s.message.slice(0, 60) + '…' : s.message)}
-            </span>
-          </td>
-          <td class="px-4 py-3 whitespace-nowrap text-right">
+          <td class="px-3 py-3 text-gray-600">${esc(s.message.length > 60 ? s.message.slice(0, 60) + '…' : s.message)}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-right" onclick="event.stopPropagation()">
             <button onclick="deleteSubmission(${s.id}, this)" class="text-red-400 hover:text-red-600 transition text-xs font-semibold border border-red-200 rounded px-2 py-1 hover:border-red-400">
               Delete
             </button>
@@ -361,7 +384,7 @@
           ${field('Date', formatDate(s.created_at))}
           ${field('Name', s.name)}
           ${field('Email', `<a href="mailto:${esc(s.email)}" class="gold hover:underline">${esc(s.email)}</a>`)}
-          ${field('Phone', s.phone || '—')}
+          ${field('Phone', s.phone ? `<a href="tel:${esc(s.phone)}" class="gold hover:underline">${esc(s.phone)}</a>` : '—')}
           ${field('Event Type', s.event_type || '—')}
           ${field('Event Date', s.event_date || '—')}
           ${field('Event Time', s.event_time || '—')}
