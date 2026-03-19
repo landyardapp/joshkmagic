@@ -119,6 +119,7 @@
                   <th class="px-3 py-3 font-semibold whitespace-nowrap hidden xl:table-cell">Event Date</th>
                   <th class="px-3 py-3 font-semibold whitespace-nowrap hidden xl:table-cell">Guests</th>
                   <th class="px-3 py-3 font-semibold">Message</th>
+                  <th class="px-3 py-3 font-semibold hidden sm:table-cell">Status</th>
                   <th class="px-3 py-3 font-semibold"></th>
                 </tr>
               </thead>
@@ -302,6 +303,7 @@
           <td class="px-3 py-3 whitespace-nowrap text-gray-600 hidden xl:table-cell">${esc(s.event_date || '—')}</td>
           <td class="px-3 py-3 whitespace-nowrap text-gray-600 hidden xl:table-cell">${esc(s.attendees || '—')}</td>
           <td class="px-3 py-3 text-gray-600">${esc(s.message.length > 60 ? s.message.slice(0, 60) + '…' : s.message)}</td>
+          <td class="px-3 py-3 whitespace-nowrap hidden sm:table-cell"><div class="crm-badges flex gap-1">${crmBadges(s)}</div></td>
           <td class="px-4 py-3 whitespace-nowrap text-right" onclick="event.stopPropagation()">
             <button onclick="deleteSubmission(${s.id}, this)" class="text-red-400 hover:text-red-600 transition text-xs font-semibold border border-red-200 rounded px-2 py-1 hover:border-red-400">
               Delete
@@ -395,7 +397,30 @@
           <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Message</p>
           <p class="text-gray-800 leading-relaxed whitespace-pre-wrap">${esc(s.message)}</p>
         </div>
+        <div class="mt-4 pt-4 border-t border-gray-100">
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Status</p>
+          <div class="flex flex-wrap gap-4">
+            <label class="flex items-center gap-2 cursor-pointer select-none">
+              <input type="checkbox" class="crm-check w-4 h-4 accent-amber-400" data-field="contacted_called" ${s.contacted_called ? 'checked' : ''}>
+              <span class="text-sm font-medium text-gray-700">Called</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer select-none">
+              <input type="checkbox" class="crm-check w-4 h-4 accent-amber-400" data-field="contacted_emailed" ${s.contacted_emailed ? 'checked' : ''}>
+              <span class="text-sm font-medium text-gray-700">Emailed</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer select-none">
+              <input type="checkbox" class="crm-check w-4 h-4 accent-green-500" data-field="booked" ${s.booked ? 'checked' : ''}>
+              <span class="text-sm font-medium text-gray-700">Booked ✓</span>
+            </label>
+          </div>
+          <p id="crm-save-status" class="text-xs text-gray-400 mt-2 hidden">Saved</p>
+        </div>
       `;
+      // Wire up CRM checkboxes
+      document.querySelectorAll('.crm-check').forEach(cb => {
+        cb.addEventListener('change', () => saveCRM(s.id));
+      });
+
       document.getElementById('modal').classList.remove('hidden');
     }
 
@@ -547,6 +572,35 @@
         btn.textContent = 'Delete';
         alert('Failed to delete review.');
       }
+    }
+
+    // --- CRM ---
+    async function saveCRM(id) {
+      const checks = document.querySelectorAll('.crm-check');
+      const payload = {};
+      checks.forEach(c => payload[c.dataset.field] = c.checked);
+      await fetch(`/api/crm?id=${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+        body: JSON.stringify(payload),
+      });
+      // Update local submissions cache
+      const s = submissions.find(s => s.id === id);
+      if (s) Object.assign(s, payload);
+      // Refresh the row badges
+      const row = document.querySelector(`tr[data-id="${id}"]`);
+      if (row) row.querySelector('.crm-badges').innerHTML = crmBadges(payload);
+      // Show saved confirmation
+      const st = document.getElementById('crm-save-status');
+      if (st) { st.classList.remove('hidden'); setTimeout(() => st.classList.add('hidden'), 1500); }
+    }
+
+    function crmBadges(s) {
+      let b = '';
+      if (s.booked)            b += '<span class="inline-block text-xs bg-green-100 text-green-700 font-semibold rounded px-1.5 py-0.5">Booked</span>';
+      if (s.contacted_called)  b += '<span class="inline-block text-xs bg-blue-100 text-blue-600 font-semibold rounded px-1.5 py-0.5">Called</span>';
+      if (s.contacted_emailed) b += '<span class="inline-block text-xs bg-purple-100 text-purple-600 font-semibold rounded px-1.5 py-0.5">Emailed</span>';
+      return b;
     }
 
     function editReview(btn) {
