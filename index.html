@@ -496,10 +496,10 @@
                 current = idx;
                 slides[current].classList.add('active');
                 clearInterval(timer);
-                timer = setInterval(() => goTo((current + 1) % slides.length), 12000);
+                timer = setInterval(() => goTo((current + 1) % slides.length), 8000);
             }
 
-            timer = setInterval(() => goTo((current + 1) % slides.length), 12000);
+            timer = setInterval(() => goTo((current + 1) % slides.length), 8000);
 
             rotator.style.cursor = 'pointer';
             rotator.addEventListener('click', () => goTo((current + 1) % slides.length));

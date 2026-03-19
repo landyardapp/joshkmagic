@@ -9,6 +9,7 @@ export async function onRequestGet(context) {
       id: r.id,
       author: r.author,
       text: r.text,
+      full_text: r.full_text || null,
       time: new Date(r.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
     })) });
   } catch (err) {
@@ -29,7 +30,7 @@ export async function onRequestPost(context) {
     return Response.json({ error: 'Invalid body' }, { status: 400 });
   }
 
-  const { author, text } = body;
+  const { author, text, full_text } = body;
   if (!author || !text) {
     return Response.json({ error: 'Author and text are required.' }, { status: 400 });
   }
@@ -37,7 +38,8 @@ export async function onRequestPost(context) {
   try {
     const sql = neon(env.POSTGRES_URL);
     const rows = await sql`
-      INSERT INTO google_reviews (author, text) VALUES (${author.trim()}, ${text.trim()})
+      INSERT INTO google_reviews (author, text, full_text)
+      VALUES (${author.trim()}, ${text.trim()}, ${full_text?.trim() || null})
       RETURNING *
     `;
     return Response.json({ success: true, review: rows[0] });
