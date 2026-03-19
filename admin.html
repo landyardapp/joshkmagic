@@ -25,7 +25,7 @@
   <!-- Login Screen -->
   <div id="login-screen" class="min-h-screen flex items-center justify-center">
     <div class="bg-white rounded-xl shadow-lg p-10 w-full max-w-sm border border-gray-200">
-      <h1 class="text-2xl font-bold text-center mb-1">Josh Kurzban <span class="gold">Magic</span></h1>
+      <h1 class="text-2xl font-bold text-center mb-1">Josh Kurzban <span class="gold relative" id="magic-login">Magic</span></h1>
       <p class="text-center text-gray-500 text-sm mb-8">Admin Panel</p>
       <form id="login-form">
         <label class="block text-sm font-semibold text-gray-700 mb-2">Password</label>
@@ -183,24 +183,32 @@
   <script>
     // Sparkle effect
     (function() {
-      const el = document.getElementById('magic-word');
       const shapes = ['✦','✧','⋆','★'];
       const colors = ['#D4AF37','#f5d76e','#ffe599','#c9a227'];
-      function spawn() {
-        const s = document.createElement('span');
-        s.className = 'sparkle-particle';
-        s.textContent = shapes[Math.floor(Math.random() * shapes.length)];
-        const size = 8 + Math.random() * 8;
-        s.style.cssText = `left:${-10+Math.random()*110}%;top:${-20+Math.random()*120}%;font-size:${size}px;color:${colors[Math.floor(Math.random()*colors.length)]};line-height:1;`;
-        el.appendChild(s);
-        setTimeout(() => s.remove(), 950);
+
+      function makeSparkler(el, interval, count) {
+        function spawn() {
+          const s = document.createElement('span');
+          s.className = 'sparkle-particle';
+          s.textContent = shapes[Math.floor(Math.random() * shapes.length)];
+          const size = 8 + Math.random() * 8;
+          s.style.cssText = `left:${-10+Math.random()*110}%;top:${-20+Math.random()*120}%;font-size:${size}px;color:${colors[Math.floor(Math.random()*colors.length)]};line-height:1;`;
+          el.appendChild(s);
+          setTimeout(() => s.remove(), 950);
+        }
+        function burst() {
+          for (let i = 0; i < count; i++) setTimeout(spawn, i * 80);
+          setTimeout(burst, interval + Math.random() * (interval * 0.5));
+        }
+        setTimeout(burst, 300);
       }
-      function burst() {
-        const count = 2 + Math.floor(Math.random() * 3);
-        for (let i = 0; i < count; i++) setTimeout(spawn, i * 120);
-        setTimeout(burst, 2500 + Math.random() * 2000);
-      }
-      setTimeout(burst, 1000);
+
+      // Login sparkles — almost non-stop
+      const loginEl = document.getElementById('magic-login');
+      if (loginEl) makeSparkler(loginEl, 400, 4);
+
+      const el = document.getElementById('magic-word');
+      if (el) makeSparkler(el, 2500, 2);
     })();
 
     let password = '';
