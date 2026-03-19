@@ -66,6 +66,23 @@
         .marquee-track:hover {
             animation-play-state: paused;
         }
+        .carousel-item {
+            position: absolute;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.6s cubic-bezier(0.25,0.46,0.45,0.94),
+                        opacity 0.6s ease,
+                        filter 0.6s ease,
+                        z-index 0s;
+        }
+        .carousel-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            pointer-events: none;
+        }
         @keyframes sparkle {
             0%   { transform: scale(0) rotate(0deg);   opacity: 0; }
             30%  { transform: scale(1) rotate(45deg);  opacity: 1; }
@@ -308,19 +325,15 @@
     <section id="gallery" class="py-20">
         <div class="container mx-auto px-6">
             <h2 class="text-3xl md:text-4xl font-bold font-playfair mb-12 text-center">Moments of Wonder</h2>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="rounded-lg h-64 transform hover:scale-105 transition-transform duration-300">
-                    <img src="./assets/images/perform1.png" class="w-full h-full object-cover rounded-lg" alt="Magic Performance 1">
-                </div>
-                <div class="rounded-lg h-64 transform hover:scale-105 transition-transform duration-300">
-                    <img src="./assets/images/perform4.avif" class="w-full h-full object-cover rounded-lg" alt="Magic Performance 2">
-                </div>
-                <div class="rounded-lg h-64 transform hover:scale-105 transition-transform duration-300">
-                    <img src="./assets/images/perform3.avif" class="w-full h-full object-cover rounded-lg" alt="Magic Performance 3">
-                </div>
-                <div class="rounded-lg h-64 transform hover:scale-105 transition-transform duration-300">
-                    <img src="./assets/images/perform2.avif" class="w-full h-full object-cover rounded-lg" alt="Magic Performance 4">
-                </div>
+            <div class="relative overflow-hidden" id="carousel-viewport" style="height: min(70vw, 480px);">
+                <div id="carousel-track" class="absolute inset-0 flex items-center justify-center"></div>
+                <!-- Arrows -->
+                <button id="carousel-prev" class="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-black/40 hover:bg-black/60 text-white rounded-full w-10 h-10 flex items-center justify-center transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                </button>
+                <button id="carousel-next" class="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-black/40 hover:bg-black/60 text-white rounded-full w-10 h-10 flex items-center justify-center transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </button>
             </div>
         </div>
     </section>
@@ -466,6 +479,119 @@
           .then(r => r.json())
           .then(d => { if (d.build) document.getElementById('build-info').textContent = d.build; })
           .catch(() => {});
+
+        // ── Carousel ──────────────────────────────────────────────
+        (function() {
+            // ADD MORE IMAGES HERE — just append to the array
+            const images = [
+                './assets/images/perform1.png',
+                './assets/images/perform2.avif',
+                './assets/images/perform3.avif',
+                './assets/images/perform4.avif',
+                './assets/images/gallery1.png',
+                './assets/images/gallery2.png',
+                './assets/images/gallery3.png',
+                './assets/images/gallery4.png',
+                './assets/images/gallery5.png',
+                './assets/images/gallery6.png',
+                './assets/images/gallery7.png',
+            ];
+
+            const track = document.getElementById('carousel-track');
+            const viewport = document.getElementById('carousel-viewport');
+            let current = 0;
+            let animating = false;
+            let autoTimer;
+
+            // Build items
+            images.forEach((src, i) => {
+                const div = document.createElement('div');
+                div.className = 'carousel-item';
+                div.dataset.index = i;
+                const img = document.createElement('img');
+                img.src = src;
+                img.alt = 'Gallery photo ' + (i + 1);
+                div.appendChild(img);
+                div.addEventListener('click', () => {
+                    const offset = i - current;
+                    if (offset === 0) return;
+                    goTo(offset > 0 ? 'next' : 'prev');
+                });
+                track.appendChild(div);
+            });
+
+            function layout() {
+                const vw = viewport.offsetWidth;
+                const vh = viewport.offsetHeight;
+                const size = Math.min(vw * 0.55, vh * 0.92);
+                const sideSize = size * 0.72;
+                const gap = size * 0.52;
+                const n = images.length;
+
+                Array.from(track.children).forEach((el, i) => {
+                    let offset = ((i - current) % n + n) % n;
+                    if (offset > n / 2) offset -= n;
+
+                    let scale, opacity, blur, zIndex, x;
+
+                    if (offset === 0) {
+                        scale = 1; opacity = 1; blur = 0; zIndex = 10;
+                        x = 0;
+                    } else if (offset === 1 || offset === -( n - 1)) {
+                        scale = sideSize / size; opacity = 0.6; blur = 1; zIndex = 5;
+                        x = gap;
+                    } else if (offset === -1 || offset === n - 1) {
+                        scale = sideSize / size; opacity = 0.6; blur = 1; zIndex = 5;
+                        x = -gap;
+                    } else if (Math.abs(offset) === 2) {
+                        scale = (sideSize / size) * 0.8; opacity = 0.3; blur = 2; zIndex = 2;
+                        x = gap * 1.7 * Math.sign(offset);
+                    } else {
+                        scale = 0; opacity = 0; blur = 0; zIndex = 0;
+                        x = gap * 2.5 * Math.sign(offset);
+                    }
+
+                    el.style.width  = size + 'px';
+                    el.style.height = size + 'px';
+                    el.style.left   = '50%';
+                    el.style.top    = '50%';
+                    el.style.transform = `translate(calc(-50% + ${x}px), -50%) scale(${scale})`;
+                    el.style.opacity   = opacity;
+                    el.style.filter    = blur ? `blur(${blur}px)` : '';
+                    el.style.zIndex    = zIndex;
+                });
+            }
+
+            function goTo(dir) {
+                if (animating) return;
+                animating = true;
+                current = (current + (dir === 'next' ? 1 : -1) + images.length) % images.length;
+                layout();
+                setTimeout(() => animating = false, 650);
+                resetAuto();
+            }
+
+            function resetAuto() {
+                clearInterval(autoTimer);
+                autoTimer = setInterval(() => goTo('next'), 3500);
+            }
+
+            document.getElementById('carousel-prev').addEventListener('click', () => goTo('prev'));
+            document.getElementById('carousel-next').addEventListener('click', () => goTo('next'));
+
+            // Touch swipe
+            let touchX = 0;
+            viewport.addEventListener('touchstart', e => touchX = e.touches[0].clientX, { passive: true });
+            viewport.addEventListener('touchend', e => {
+                const dx = e.changedTouches[0].clientX - touchX;
+                if (Math.abs(dx) > 40) goTo(dx < 0 ? 'next' : 'prev');
+            });
+
+            window.addEventListener('resize', layout);
+            layout();
+            resetAuto();
+        })();
+        // ────────────────────────────────────────────────────────────
 
         // Google Reviews rotator
         (async () => {
